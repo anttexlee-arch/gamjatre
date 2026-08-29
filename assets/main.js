@@ -45,14 +45,79 @@ document.querySelectorAll('[data-demo-form]').forEach((form) => {
   });
 });
 
-const filters = document.querySelectorAll('[data-filter]');
-const productItems = document.querySelectorAll('[data-category]');
-filters.forEach((filter) => filter.addEventListener('click', () => {
-  const category = filter.dataset.filter;
-  filters.forEach((button) => button.classList.toggle('is-active', button === filter));
-  filter.parentElement.querySelectorAll('button').forEach((button) => button.setAttribute('aria-pressed', String(button === filter)));
-  productItems.forEach((item) => {
-    const show = category === 'all' || item.dataset.category === category;
-    item.hidden = !show;
-  });
-}));
+const productLists = document.querySelectorAll('[data-product-list]');
+
+const formatPrice = (price) => `${Number(price).toLocaleString('ko-KR')}원`;
+
+const createProductCard = (product) => {
+  const article = document.createElement('article');
+  article.className = 'store-product-card';
+
+  const imageLink = document.createElement('a');
+  imageLink.className = 'store-product-image';
+  imageLink.href = product.url;
+  imageLink.target = '_blank';
+  imageLink.rel = 'noopener noreferrer';
+  imageLink.setAttribute('aria-label', `${product.name} 구매 페이지 열기`);
+
+  const image = document.createElement('img');
+  image.src = product.image;
+  image.alt = product.name;
+  image.loading = 'lazy';
+  image.decoding = 'async';
+  imageLink.appendChild(image);
+
+  const info = document.createElement('div');
+  info.className = 'store-product-info';
+
+  const name = document.createElement('h3');
+  name.textContent = product.name;
+
+  const bottom = document.createElement('div');
+  bottom.className = 'store-product-bottom';
+
+  const price = document.createElement('strong');
+  price.textContent = formatPrice(product.price);
+
+  const button = document.createElement('a');
+  button.className = 'buy-button';
+  button.href = product.url;
+  button.target = '_blank';
+  button.rel = 'noopener noreferrer';
+  button.innerHTML = '구매하기 <span aria-hidden="true">↗</span>';
+
+  bottom.append(price, button);
+  info.append(name, bottom);
+  article.append(imageLink, info);
+  return article;
+};
+
+const loadProducts = async () => {
+  if (!productLists.length) return;
+
+  try {
+    const response = await fetch('products.json');
+    if (!response.ok) throw new Error('Product data could not be loaded.');
+    const data = await response.json();
+    const products = Array.isArray(data) ? data : data.products;
+    if (!Array.isArray(products)) throw new Error('Invalid product data.');
+
+    document.querySelectorAll('[data-product-count]').forEach((count) => {
+      count.textContent = products.length;
+    });
+
+    productLists.forEach((list) => {
+      const featured = products.filter((product) => product.featured);
+      const items = list.dataset.productList === 'featured'
+        ? (featured.length ? featured : products).slice(0, 3)
+        : products;
+      list.replaceChildren(...items.map(createProductCard));
+    });
+  } catch (error) {
+    productLists.forEach((list) => {
+      list.innerHTML = '<p class="product-error">제품 정보를 불러오지 못했습니다. 잠시 후 다시 확인해 주세요.</p>';
+    });
+  }
+};
+
+loadProducts();
