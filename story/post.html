@@ -29,6 +29,7 @@
     .post-body ul { margin: 0 0 1.7em 1.2em; }
     .post-body li { margin-bottom: .5em; }
     .post-body li::marker { color: var(--clay); }
+    .post-body a { color: var(--clay); border-bottom: 1px solid currentColor; }
     .blog-faq { margin-top: 11vh; }
     .blog-faq details { padding: 18px 0; border-top: 1px solid var(--ink); }
     .blog-faq details:last-of-type { border-bottom: 1px solid var(--ink); }
@@ -83,7 +84,25 @@
     return d.getFullYear() + '. ' + (d.getMonth()+1) + '. ' + d.getDate() + '.';
   }
 
-  // 초경량 마크다운: 빈 줄=문단, "## "=소제목, "- "=리스트. 전부 textContent로 삽입(XSS-safe).
+  // 초경량 마크다운: 빈 줄=문단, "## "=소제목, "- "=리스트, [이름](주소)=링크.
+  function appendInline(parent, text){
+    var pattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+|\.\.?\/[^\s)]+|\/[^\s)]+)\)/g;
+    var last = 0;
+    var match;
+    while ((match = pattern.exec(String(text || ''))) !== null){
+      parent.appendChild(document.createTextNode(text.slice(last, match.index)));
+      var a = el('a', null, match[1]);
+      a.href = match[2];
+      if (/^https?:\/\//.test(match[2])){
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+      }
+      parent.appendChild(a);
+      last = pattern.lastIndex;
+    }
+    parent.appendChild(document.createTextNode(String(text || '').slice(last)));
+  }
+
   function renderBody(src){
     var box = el('div','post-body');
     var blocks = String(src || '').replace(/\r\n/g,'\n').split(/\n\s*\n/);
@@ -93,12 +112,18 @@
       var lines = block.split('\n');
       if (lines.every(function(l){ return /^- /.test(l.trim()); })){
         var ul = el('ul');
-        lines.forEach(function(l){ ul.appendChild(el('li', null, l.trim().slice(2))); });
+        lines.forEach(function(l){
+          var li = el('li');
+          appendInline(li, l.trim().slice(2));
+          ul.appendChild(li);
+        });
         box.appendChild(ul);
       } else if (/^## /.test(block)){
         box.appendChild(el('h2', null, block.slice(3).trim()));
       } else {
-        box.appendChild(el('p', null, block));
+        var p = el('p');
+        appendInline(p, block);
+        box.appendChild(p);
       }
     });
     return box;
