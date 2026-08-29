@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="감자트리의 식재료와 식탁 이야기를 기록합니다.">
+  <meta name="theme-color" content="#F6F1E7">
+  <title>이야기 — 감자트리</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/main.js" defer></script>
+  <style>
+    .blog-index .page-hero { min-height: 72svh; }
+    .blog-list-section { padding-block: max(15vh, 110px); }
+    .blog-wrap { width: min(680px, calc(100% - 48px)); margin-inline: auto; }
+    .blog-list { list-style: none; }
+    .blog-card { border-top: 1px solid var(--ink); }
+    .blog-card:last-child { border-bottom: 1px solid var(--ink); }
+    .blog-card a { display: block; padding: 38px 0; color: inherit; text-decoration: none; }
+    .blog-card time { font-size: .72rem; letter-spacing: .08em; }
+    .blog-card h2 { max-width: 18ch; margin: 10px 0 14px; font-size: clamp(1.8rem, 4vw, 2.7rem); letter-spacing: -.045em; }
+    .blog-card .summary { max-width: 40ch; font-size: .94rem; }
+    .blog-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+    .blog-tag { padding: 4px 10px; border: 1px solid var(--ink); font-size: .68rem; }
+    .blog-admin { display: inline-block; margin-top: 42px; font-size: .72rem; border-bottom: 1px solid var(--ink); }
+    .blog-empty { padding: 15vh 0; text-align: center; }
+    .blog-empty strong { display: block; margin-bottom: 10px; font-family: var(--serif); font-size: 1.5rem; }
+    @media (max-width: 640px) {
+      .blog-wrap { width: min(100% - 32px, 680px); }
+      .blog-card a { padding: 32px 0; }
+    }
+  </style>
+</head>
+<body class="blog-index">
+  <a class="skip-link" href="#main">본문으로 바로가기</a>
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="../index.html" aria-label="감자트리 홈"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>감자트리</span></a>
+      <button class="menu-button" type="button" aria-expanded="false" aria-controls="site-nav"><span class="sr-only">메뉴 열기</span><span></span><span></span></button>
+      <nav class="site-nav" id="site-nav" aria-label="주요 메뉴">
+        <a href="../index.html">홈</a><a href="../about.html">내 소개</a><a href="../products.html">제품</a><a href="./" aria-current="page">이야기</a><a class="nav-cta" href="../contact.html">연락하기</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <section class="page-hero">
+      <div class="container page-hero-grid">
+        <div><p class="eyebrow">JOURNAL</p><h1>식탁에서 시작된<br>감자트리 이야기.</h1></div>
+        <p class="page-intro">좋은 재료를 고르는 기준과 만드는 사람의 마음을 천천히 기록합니다.</p>
+      </div>
+    </section>
+    <section class="blog-list-section" aria-label="이야기 목록">
+      <div class="blog-wrap">
+        <ul class="blog-list" id="list"></ul>
+        <a class="blog-admin" href="admin.html">블로그 관리</a>
+      </div>
+    </section>
+  </main>
+<script>
+(function(){
+  var list = document.getElementById('list');
+
+  function el(tag, cls, text){
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function fmtDate(s){
+    var d = new Date(s + 'T00:00:00');
+    if (isNaN(d)) return s || '';
+    return d.getFullYear() + '. ' + (d.getMonth()+1) + '. ' + d.getDate() + '.';
+  }
+
+  function render(posts){
+    if (!Array.isArray(posts) || posts.length === 0){
+      var empty = el('div','blog-empty');
+      empty.appendChild(el('strong', null, '아직 올라온 글이 없습니다'));
+      empty.appendChild(document.createTextNode('첫 번째 이야기를 준비하고 있어요. 곧 만나요.'));
+      list.replaceWith(empty);
+      return;
+    }
+    posts = posts.slice().sort(function(a,b){
+      return String(b.date||'').localeCompare(String(a.date||''));
+    });
+    posts.forEach(function(p){
+      var li = el('li','blog-card');
+      var a = el('a');
+      a.href = p.url ? String(p.url) : 'post.html?id=' + encodeURIComponent(p.id || '');
+      var t = el('time', null, fmtDate(p.date));
+      t.setAttribute('datetime', String(p.date||''));
+      a.appendChild(t);
+      a.appendChild(el('h2', null, String(p.title || '(제목 없음)')));
+      if (p.summary) a.appendChild(el('p','summary', String(p.summary)));
+      if (Array.isArray(p.tags) && p.tags.length){
+        var tags = el('div','blog-tags');
+        p.tags.forEach(function(tg){ tags.appendChild(el('span','blog-tag', String(tg))); });
+        a.appendChild(tags);
+      }
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+  }
+
+  fetch('posts.json', {cache:'no-store'})
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(render)
+    .catch(function(){
+      list.replaceWith(el('div','blog-empty','글 목록을 불러오지 못했습니다. 잠시 후 새로고침해 주세요.'));
+    });
+})();
+</script>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div><a class="brand footer-brand" href="../index.html"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>감자트리</span></a><p>좋은 재료로 시작하는 다정한 식탁.</p></div>
+      <div class="footer-links"><a href="../about.html">내 소개</a><a href="../products.html">제품</a><a href="./" aria-current="page">이야기</a><a href="../contact.html">연락하기</a></div>
+      <div class="footer-contact"><p>hello@gamjatree.kr</p><p>Instagram · @gamjatree</p></div>
+    </div>
+    <div class="container footer-bottom"><span>© <span data-year></span> GAMJATREE</span><span>사업자 정보는 준비 중입니다.</span></div>
+  </footer>
+</body>
+</html>

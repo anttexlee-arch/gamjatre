@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="theme-color" content="#F6F1E7">
+  <link rel="canonical" href="">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="">
+  <meta property="og:description" content="">
+  <meta property="og:url" content="">
+  <title>이야기 — 감자트리</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/main.js" defer></script>
+  <style>
+    .blog-post-main { width: min(680px, calc(100% - 48px)); margin-inline: auto; padding: max(15vh, 120px) 0; }
+    .blog-back { display: inline-block; margin-bottom: 8vh; border-bottom: 1px solid var(--ink); font-size: .76rem; }
+    .blog-post-main article { padding: 0; }
+    .post-head time, .post-head .meta { font-size: .75rem; letter-spacing: .06em; }
+    .post-head h1 { max-width: 18ch; margin: 16px 0 22px; font-family: var(--serif); font-size: clamp(2.5rem, 7vw, 4.8rem); font-weight: 400; line-height: 1.15; letter-spacing: -.06em; }
+    .blog-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+    .blog-tag { padding: 4px 10px; border: 1px solid var(--ink); font-size: .68rem; }
+    .rule { width: 64px; margin: 52px 0; border: 0; border-top: 2px solid var(--clay); }
+    .post-body { font-size: 1.03rem; line-height: 1.95; }
+    .post-body p { max-width: 40ch; margin-bottom: 1.7em; }
+    .post-body h2, .blog-faq h2 { max-width: 22ch; margin: 2.4em 0 .9em; font-size: clamp(1.75rem, 4vw, 2.45rem); letter-spacing: -.045em; }
+    .post-body ul { margin: 0 0 1.7em 1.2em; }
+    .post-body li { margin-bottom: .5em; }
+    .post-body li::marker { color: var(--clay); }
+    .blog-faq { margin-top: 11vh; }
+    .blog-faq details { padding: 18px 0; border-top: 1px solid var(--ink); }
+    .blog-faq details:last-of-type { border-bottom: 1px solid var(--ink); }
+    .blog-faq summary { cursor: pointer; font-weight: 650; }
+    .blog-faq summary::before { content: "Q. "; color: var(--clay); }
+    .blog-faq details p { max-width: 40ch; margin-top: 12px; }
+    .blog-sources { margin-top: 8vh; }
+    .blog-sources h2 { margin-bottom: 12px; font-size: 1rem; }
+    .post-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 12vh; padding-top: 24px; border-top: 1px solid var(--ink); }
+    .post-nav a { display: block; color: inherit; text-decoration: none; }
+    .post-nav .dir { margin-bottom: 8px; font-size: .68rem; letter-spacing: .1em; }
+    .post-nav .pn-title { font-family: var(--serif); font-size: 1.05rem; }
+    .post-nav .next { text-align: right; }
+    .notfound { padding: 15vh 0; text-align: center; }
+    .notfound h1 { margin-bottom: 16px; font-size: 2.4rem; }
+    @media (max-width: 640px) {
+      .blog-post-main { width: min(100% - 32px, 680px); padding-top: max(15vh, 100px); }
+      .post-nav { grid-template-columns: 1fr; }
+      .post-nav .next { text-align: left; }
+    }
+  </style>
+</head>
+<body class="blog-post-page">
+  <a class="skip-link" href="#main">본문으로 바로가기</a>
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="../index.html" aria-label="감자트리 홈"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>감자트리</span></a>
+      <button class="menu-button" type="button" aria-expanded="false" aria-controls="site-nav"><span class="sr-only">메뉴 열기</span><span></span><span></span></button>
+      <nav class="site-nav" id="site-nav" aria-label="주요 메뉴">
+        <a href="../index.html">홈</a><a href="../about.html">내 소개</a><a href="../products.html">제품</a><a href="./" aria-current="page">이야기</a><a class="nav-cta" href="../contact.html">연락하기</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="blog-post-main">
+    <a class="blog-back" href="./">← 이야기 목록</a>
+    <div id="post-content"></div>
+  </main>
+<script>
+(function(){
+  var main = document.getElementById('post-content');
+
+  function el(tag, cls, text){
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function fmtDate(s){
+    var d = new Date(s + 'T00:00:00');
+    if (isNaN(d)) return s || '';
+    return d.getFullYear() + '. ' + (d.getMonth()+1) + '. ' + d.getDate() + '.';
+  }
+
+  // 초경량 마크다운: 빈 줄=문단, "## "=소제목, "- "=리스트. 전부 textContent로 삽입(XSS-safe).
+  function renderBody(src){
+    var box = el('div','post-body');
+    var blocks = String(src || '').replace(/\r\n/g,'\n').split(/\n\s*\n/);
+    blocks.forEach(function(block){
+      block = block.trim();
+      if (!block) return;
+      var lines = block.split('\n');
+      if (lines.every(function(l){ return /^- /.test(l.trim()); })){
+        var ul = el('ul');
+        lines.forEach(function(l){ ul.appendChild(el('li', null, l.trim().slice(2))); });
+        box.appendChild(ul);
+      } else if (/^## /.test(block)){
+        box.appendChild(el('h2', null, block.slice(3).trim()));
+      } else {
+        box.appendChild(el('p', null, block));
+      }
+    });
+    return box;
+  }
+
+  function notFound(){
+    var d = el('div','notfound');
+    d.appendChild(el('h1', null, '글을 찾을 수 없습니다'));
+    d.appendChild(el('p', null, '주소가 잘못되었거나 삭제된 글일 수 있어요.'));
+    var a = el('a', null, '글 목록으로 돌아가기');
+    a.href = 'index.html';
+    d.appendChild(a);
+    main.appendChild(d);
+  }
+
+  function hrefOf(p){
+    return p.url ? String(p.url) : 'post.html?id=' + encodeURIComponent(p.id || '');
+  }
+
+  function setAttr(sel, attr, val){
+    var n = document.querySelector(sel);
+    if (n) n.setAttribute(attr, val);
+  }
+
+  function addLd(obj){
+    var ld = document.createElement('script');
+    ld.type = 'application/ld+json';
+    ld.textContent = JSON.stringify(obj);
+    document.head.appendChild(ld);
+  }
+
+  function setMeta(post){
+    var title = String(post.title || '이야기');
+    var desc = String(post.description || post.summary || '').slice(0, 160);
+    var url = location.origin + location.pathname + '?id=' + encodeURIComponent(post.id || '');
+    var author = String(post.author || '').trim();
+    document.title = title;
+    setAttr('meta[name="description"]', 'content', desc);
+    setAttr('meta[name="author"]', 'content', author);
+    setAttr('link[rel="canonical"]', 'href', url);
+    setAttr('meta[property="og:title"]', 'content', title);
+    setAttr('meta[property="og:description"]', 'content', desc);
+    setAttr('meta[property="og:url"]', 'content', url);
+
+    var article = {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: title,
+      description: desc,
+      datePublished: String(post.date || ''),
+      dateModified: String(post.updated || post.date || ''),
+      mainEntityOfPage: url,
+      keywords: Array.isArray(post.tags) ? post.tags.map(String).join(', ') : ''
+    };
+    if (author) article.author = { '@type': 'Person', name: author };
+    addLd(article);
+
+    var faq = Array.isArray(post.faq) ? post.faq.filter(function(f){ return f && f.q && f.a; }) : [];
+    if (faq.length){
+      addLd({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faq.map(function(f){
+          return { '@type': 'Question', name: String(f.q),
+                   acceptedAnswer: { '@type': 'Answer', text: String(f.a) } };
+        })
+      });
+    }
+    addLd({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: '이야기', item: location.origin + location.pathname.replace(/post\.html$/, '') },
+        { '@type': 'ListItem', position: 2, name: title, item: url }
+      ]
+    });
+  }
+
+  function renderFaq(faq){
+    var sec = el('section','blog-faq');
+    sec.appendChild(el('h2', null, '자주 묻는 질문'));
+    faq.forEach(function(f){
+      var d = el('details');
+      d.appendChild(el('summary', null, String(f.q)));
+      d.appendChild(el('p', null, String(f.a)));
+      sec.appendChild(d);
+    });
+    return sec;
+  }
+
+  function renderSources(sources){
+    var sec = el('section','blog-sources');
+    sec.appendChild(el('h2', null, '참고·출처'));
+    var ol = el('ol');
+    sources.forEach(function(s){
+      var li = el('li');
+      if (s && s.url){
+        var a = el('a', null, String(s.title || s.url));
+        a.href = String(s.url); a.rel = 'noopener'; a.target = '_blank';
+        li.appendChild(a);
+      } else {
+        li.textContent = String(s && s.title || s || '');
+      }
+      ol.appendChild(li);
+    });
+    sec.appendChild(ol);
+    return sec;
+  }
+
+  function render(posts){
+    var qs = new URLSearchParams(location.search);
+    var id = qs.get('id') || qs.get('slug');
+    posts = (Array.isArray(posts) ? posts : []).slice().sort(function(a,b){
+      return String(b.date||'').localeCompare(String(a.date||''));
+    });
+    var idx = -1;
+    posts.forEach(function(p,i){ if (String(p.id) === id || (p.url && String(p.url).replace(/\.html$/,'') === id)) idx = i; });
+    if (idx < 0){ notFound(); return; }
+    var post = posts[idx];
+    setMeta(post);
+
+    var art = el('article');
+    var head = el('header','post-head');
+    var t = el('time', null, fmtDate(post.date));
+    t.setAttribute('datetime', String(post.date||''));
+    head.appendChild(t);
+    head.appendChild(el('h1', null, String(post.title || '(제목 없음)')));
+    if (post.author || (post.updated && post.updated !== post.date)){
+      var meta = el('div','meta');
+      if (post.author) meta.appendChild(el('span', null, String(post.author)));
+      if (post.updated && post.updated !== post.date) meta.appendChild(el('span', null, '수정 ' + fmtDate(post.updated)));
+      head.appendChild(meta);
+    }
+    if (Array.isArray(post.tags) && post.tags.length){
+      var tags = el('div','blog-tags');
+      post.tags.forEach(function(tg){ tags.appendChild(el('span','blog-tag', String(tg))); });
+      head.appendChild(tags);
+    }
+    art.appendChild(head);
+    art.appendChild(el('hr','rule'));
+    art.appendChild(renderBody(post.body));
+    var faq = Array.isArray(post.faq) ? post.faq.filter(function(f){ return f && f.q && f.a; }) : [];
+    if (faq.length) art.appendChild(renderFaq(faq));
+    if (Array.isArray(post.sources) && post.sources.length) art.appendChild(renderSources(post.sources));
+
+    var prev = posts[idx+1]; // 더 오래된 글
+    var next = posts[idx-1]; // 더 최신 글
+    if (prev || next){
+      var nav = el('nav','post-nav');
+      function cell(p, cls, label){
+        if (!p){ nav.appendChild(el('span')); return; }
+        var a = el('a', cls);
+        a.href = hrefOf(p);
+        a.appendChild(el('div','dir', label));
+        a.appendChild(el('div','pn-title', String(p.title || '')));
+        nav.appendChild(a);
+      }
+      cell(prev, 'prev', '이전 글');
+      cell(next, 'next', '다음 글');
+      art.appendChild(nav);
+    }
+    main.appendChild(art);
+  }
+
+  fetch('posts.json', {cache:'no-store'})
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(render)
+    .catch(function(){ notFound(); });
+})();
+</script>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div><a class="brand footer-brand" href="../index.html"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>감자트리</span></a><p>좋은 재료로 시작하는 다정한 식탁.</p></div>
+      <div class="footer-links"><a href="../about.html">내 소개</a><a href="../products.html">제품</a><a href="./" aria-current="page">이야기</a><a href="../contact.html">연락하기</a></div>
+      <div class="footer-contact"><p>hello@gamjatree.kr</p><p>Instagram · @gamjatree</p></div>
+    </div>
+    <div class="container footer-bottom"><span>© <span data-year></span> GAMJATREE</span><span>사업자 정보는 준비 중입니다.</span></div>
+  </footer>
+</body>
+</html>
