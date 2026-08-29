@@ -576,3 +576,36 @@ p { line-height: 1.85; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .brand-hero-media img { animation: none !important; transform: none !important; }
 }
+
+/* Contact links */
+.contact-section { background: var(--cream); }
+.contact-panel { display: grid; grid-template-columns: .72fr 1.28fr; gap: clamp(70px, 10vw, 150px); align-items: start; }
+.contact-heading h2 { max-width: 8ch; margin-bottom: 36px; }
+.contact-heading > p:last-child { max-width: 38ch; margin: 0; color: rgba(28,26,23,.7); }
+.contact-actions { display: grid; border-top: 1px solid var(--ink); }
+.contact-action { min-height: 156px; padding: 30px 34px; display: flex; flex-direction: column; justify-content: space-between; gap: 28px; border-bottom: 1px solid var(--ink); transition: background .2s ease, color .2s ease; }
+.contact-action span { font-size: .68rem; font-weight: 750; letter-spacing: .18em; }
+.contact-action strong { font-family: var(--serif); font-size: clamp(1.65rem, 3vw, 3.15rem); font-weight: 400; line-height: 1.15; letter-spacing: -.045em; overflow-wrap: anywhere; }
+.contact-action[href]:hover,
+.contact-action[href]:focus-visible { background: var(--ink); color: var(--cream); outline: 0; }
+.contact-action-accent { background: var(--clay); }
+.contact-action-pending { color: rgba(28,26,23,.55); cursor: default; }
+.footer-contact { display: grid; gap: 10px; justify-items: end; align-content: start; }
+.footer-contact a,
+.footer-social-pending { color: rgba(246,241,231,.68); font-size: .84rem; }
+.footer-contact a { text-decoration: underline; text-underline-offset: 4px; }
+.footer-contact a:hover,
+.footer-contact a:focus-visible { color: var(--cream); }
+.footer-social-pending { margin: 0; }
+
+@media (max-width: 900px) {
+  .contact-panel { grid-template-columns: 1fr; gap: 70px; }
+  .footer-contact { justify-items: start; }
+}
+
+@media (max-width: 640px) {
+  .contact-action { min-height: 138px; padding: 26px 0; }
+  .contact-action[href]:hover,
+  .contact-action[href]:focus-visible { padding-inline: 20px; }
+  .contact-action-accent { padding-inline: 20px; }
+}
