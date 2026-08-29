@@ -460,6 +460,19 @@ p { line-height: 1.85; }
 .note-copy p { color: rgba(246,241,231,.78); }
 .button-light { background: var(--cream); color: var(--ink); }
 
+.home-journal { background: var(--cream); }
+.home-journal .section-top { align-items: end; }
+.home-journal .button-primary { background: var(--ink); color: var(--cream); }
+.home-blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.home-blog-card { min-width: 0; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+.home-blog-card a { min-height: 360px; padding: 34px 0 30px; display: flex; flex-direction: column; color: inherit; text-decoration: none; }
+.home-blog-card time { font-size: .7rem; letter-spacing: .08em; }
+.home-blog-card h3 { max-width: 18ch; margin: 22px 0 16px; font-family: var(--serif); font-size: clamp(1.7rem, 2.6vw, 2.65rem); font-weight: 400; line-height: 1.25; letter-spacing: -.045em; }
+.home-blog-card p { max-width: 40ch; font-size: .9rem; }
+.home-blog-more { margin-top: auto; padding-top: 28px; font-size: .76rem; font-weight: 720; }
+.blog-loading,
+.blog-error { grid-column: 1 / -1; padding: 72px 0; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); text-align: center; }
+
 .newsletter { min-height: 68svh; display: grid; align-items: center; background: var(--cream); border-top: 1px solid var(--ink); }
 .newsletter-form { border-color: var(--ink); }
 
@@ -528,6 +541,7 @@ p { line-height: 1.85; }
   .page-hero-grid { grid-template-columns: 1fr; gap: 42px; }
   .note-card { min-height: auto; }
   .about-hero { padding-top: calc(76px + 8vh); }
+  .home-blog-grid { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 640px) {
@@ -553,6 +567,9 @@ p { line-height: 1.85; }
   .store-product-image { aspect-ratio: .9; }
   .store-product-info h3 { max-width: 30ch; }
   .contact-form { margin-inline: -16px; padding-block: 15vh; }
+  .home-journal .section-top { align-items: flex-start; }
+  .home-blog-grid { grid-template-columns: 1fr; gap: 12vh; }
+  .home-blog-card a { min-height: 320px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

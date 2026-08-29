@@ -106,3 +106,70 @@ const loadProducts = async () => {
 };
 
 loadProducts();
+
+const blogList = document.querySelector('[data-blog-list]');
+
+const formatBlogDate = (value) => {
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value || '';
+  return new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+};
+
+const blogPostHref = (post) => {
+  const target = post.url
+    ? String(post.url)
+    : `post.html?id=${encodeURIComponent(post.id || '')}`;
+  return /^https?:\/\//.test(target) ? target : `story/${target.replace(/^\.\//, '')}`;
+};
+
+const createBlogCard = (post) => {
+  const article = document.createElement('article');
+  article.className = 'home-blog-card';
+
+  const link = document.createElement('a');
+  link.href = blogPostHref(post);
+
+  const time = document.createElement('time');
+  time.dateTime = post.date || '';
+  time.textContent = formatBlogDate(post.date);
+
+  const title = document.createElement('h3');
+  title.textContent = post.title || '(제목 없음)';
+
+  const summary = document.createElement('p');
+  summary.textContent = post.summary || '';
+
+  const more = document.createElement('span');
+  more.className = 'home-blog-more';
+  more.innerHTML = '읽어보기 <span aria-hidden="true">→</span>';
+
+  link.append(time, title, summary, more);
+  article.appendChild(link);
+  return article;
+};
+
+const loadLatestBlogPosts = async () => {
+  if (!blogList) return;
+
+  try {
+    const response = await fetch('story/posts.json', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Blog data could not be loaded.');
+    const posts = await response.json();
+    if (!Array.isArray(posts)) throw new Error('Invalid blog data.');
+
+    const latest = posts
+      .slice()
+      .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
+      .slice(0, 3);
+
+    blogList.replaceChildren(...latest.map(createBlogCard));
+  } catch (error) {
+    blogList.innerHTML = '<p class="blog-error">이야기를 불러오지 못했습니다. 잠시 후 다시 확인해 주세요.</p>';
+  }
+};
+
+loadLatestBlogPosts();
