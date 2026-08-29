@@ -64,12 +64,14 @@ const createProductCard = (product) => {
   const price = document.createElement('strong');
   price.textContent = formatPrice(product.price);
 
-  const button = document.createElement('a');
+  const button = document.createElement('button');
   button.className = 'buy-button';
-  button.href = product.url;
-  button.target = '_blank';
-  button.rel = 'noopener noreferrer';
-  button.innerHTML = '구매하기 <span aria-hidden="true">↗</span>';
+  button.type = 'button';
+  button.setAttribute('data-cart-add', '');
+  button.setAttribute('data-name', String(product.name || ''));
+  button.setAttribute('data-price', String(Number(product.price) || 0));
+  button.setAttribute('data-url', String(product.url || ''));
+  button.innerHTML = '장바구니 담기 <span aria-hidden="true">＋</span>';
 
   bottom.append(price, button);
   info.append(name, bottom);
